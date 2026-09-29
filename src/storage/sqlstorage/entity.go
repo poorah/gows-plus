@@ -34,7 +34,7 @@ func NewEntityRepository[Entity any](
 		db:         db,
 		table:      table,
 		mapper:     mapper,
-		onConflict: onConflictDoUpdate(table.OnConflict, table.UpdateOnConflict),
+		onConflict: onConflictDoUpdate(table),
 	}
 }
 
@@ -49,13 +49,17 @@ func onConflictInner(fields []string) string {
 	return strings.Join(fields, ", ")
 }
 
-func onConflictDoUpdate(conflictFields []string, setFields []string) string {
-	if len(conflictFields) == 0 {
+func onConflictDoUpdate(table Table) string {
+	if len(table.OnConflict) == 0 {
 		return ""
 	}
-	on := onConflictInner(conflictFields)
-	set := onConflictSetClause(setFields)
-	return "ON CONFLICT (" + on + ") DO UPDATE SET " + set
+	on := onConflictInner(table.OnConflict)
+	set := onConflictSetClause(table.UpdateOnConflict)
+	clause := "ON CONFLICT (" + on + ") DO UPDATE SET " + set
+	if table.UpdateOnConflictWhere != "" {
+		clause += " WHERE " + table.UpdateOnConflictWhere
+	}
+	return clause
 }
 
 func (kv *EntityRepository[Entity]) UpsertOne(entity *Entity) error {

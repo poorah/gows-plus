@@ -1,11 +1,12 @@
 package sqlstorage
 
 type Table struct {
-	Name             string
-	Columns          []string
-	DataField        string
-	OnConflict       []string
-	UpdateOnConflict []string
+	Name                  string
+	Columns               []string
+	DataField             string
+	OnConflict            []string
+	UpdateOnConflict      []string
+	UpdateOnConflictWhere string
 }
 
 var MessageTable = Table{
@@ -24,8 +25,10 @@ var MessageTable = Table{
 	},
 	UpdateOnConflict: []string{
 		"timestamp",
+		"is_real",
 		"data",
 	},
+	UpdateOnConflictWhere: "EXCLUDED.is_real OR NOT gows_messages.is_real",
 }
 
 var GroupTable = Table{
